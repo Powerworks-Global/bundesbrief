@@ -1,0 +1,8 @@
+[project]
+name = "bundesbrief"
+version = "0.1.0"
+description = "A confidence/truth layer over extracted Swiss parliamentary documents."
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["src"]
