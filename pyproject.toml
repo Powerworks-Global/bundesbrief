@@ -4,5 +4,8 @@ version = "0.1.0"
 description = "A confidence/truth layer over extracted Swiss parliamentary documents."
 requires-python = ">=3.11"
 
+[project.scripts]
+bundesbrief-mcp = "bundesbrief.__main__:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]

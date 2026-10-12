@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "bundesbrief": {
+      "command": "/path/to/bundesbrief/.venv/bin/python",
+      "args": ["-m", "bundesbrief"],
+      "cwd": "/path/to/bundesbrief"
+    }
+  }
+}
