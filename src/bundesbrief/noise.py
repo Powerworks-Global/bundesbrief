@@ -8,9 +8,10 @@ IMPORTANT -- what this is and is not
 ------------------------------------
 This is a *heuristic estimate of text-layer quality*, NOT a calibrated OCR
 confidence score. Real OCR engines expose per-character confidence values
-alongside their output; pdfplumber does not, because it reads the text layer
-that already exists in the PDF. On a native (born-digital) PDF there is no OCR
-at all, so "OCR confidence" is meaningless there. On a scanned-then-OCR'd PDF,
+alongside their output; text-layer readers like PyMuPDF do not, because they
+read the text layer that already exists in the PDF. On a native
+(born-digital) PDF there is no OCR at all, so "OCR confidence" is meaningless
+there. On a scanned-then-OCR'd PDF,
 the embedded text layer can be genuinely garbled, and that is the case where
 this heuristic is most useful: it estimates *how broken the text we already
 have* looks, not how confident some OCR engine was.

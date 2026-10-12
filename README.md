@@ -36,7 +36,7 @@ This is the actual point of the project: the same pipeline, run against realisti
 ## Architecture
 
 ```
-raw PDF ──▶ extraction.py ──┐                      (pdfplumber reads the
+raw PDF ──▶ extraction.py ──┐                       (PyMuPDF reads the
                             ├──▶ ExtractionResult   (fields found, noise with
 clean text ─▶ (text path) ──┘                        named sub-scores))
                                         │
@@ -55,15 +55,15 @@ Each module is independently testable and doesn't know about the others' interna
 
 ## Honest scope of this MVP
 
-- **Real PDF extraction is in** (closed 2026-10-12, see [ADR-002](docs/adrs/ADR-002%20%E2%80%94%20Real%20PDF%20Extraction%20and%20a%20Vendored%20trust-layer%20Dependency.md)): `bundesbrief.extraction.extract_pdf` / `pipeline.process_pdf` read actual PDF bytes via `pdfplumber` — the text layer, not OCR. A PDF with **no text layer at all** (a raw scan) yields empty text and no fields; genuine scans would need `pytesseract`/`pdf2image`, still out of scope. A malformed/unreadable PDF fails as a *recorded outcome* (`ExtractionResult.error`), never as an unhandled exception.
-- The noise estimate is a **heuristic** of text-layer quality with named sub-scores (garbage ratio, lone-character ratio, replacement-character ratio, OCR-substitution ratio) — not a calibrated per-character OCR confidence, which `pdfplumber` doesn't expose because reading a text layer involves no OCR.
+- **Real PDF extraction is in** (closed 2026-10-12, see [ADR-002](docs/adrs/ADR-002%20%E2%80%94%20Real%20PDF%20Extraction%20and%20a%20Vendored%20trust-layer%20Dependency.md)): `bundesbrief.extraction.extract_pdf` / `pipeline.process_pdf` read actual PDF bytes via **PyMuPDF** (~1.5 ms/page on 18 real Canton of Zurich documents) — the text layer, not OCR. A PDF with **no text layer at all** (a raw scan) yields empty text and no fields; genuine scans would need `pytesseract`/`pdf2image`, still out of scope. A malformed/unreadable PDF fails as a *recorded outcome* (`ExtractionResult.error`), never as an unhandled exception.
+- The noise estimate is a **heuristic** of text-layer quality with named sub-scores (garbage ratio, lone-character ratio, replacement-character ratio, OCR-substitution ratio) — not a calibrated per-character OCR confidence, which text-layer readers like PyMuPDF don't expose because reading a text layer involves no OCR.
 - Confidence-score weights (`0.5` schema completeness / `0.3` noise / `0.2` freshness) are a starting point, not calibrated against any labeled dataset.
 - The ledger is a local JSONL file, not a production-grade append-only store (no WORM backend, no distributed replication) — the guarantee it gives is "tampering is detectable," matching the smallest real version of the pattern, not a production deployment.
 - No live connection to `api.openparldata.ch` or any real cantonal parliament source — see `ROADMAP.md`.
 
 ## Where the parts come from
 
-The PDF mechanism and the noise heuristic come from the author's sibling [`pdf-extract`](https://github.com/Willpower-hadisfar/pdf-extract) project; confidence scoring delegates to the real [`trust-layer`](https://github.com/Willpower-hadisfar/trust-layer) package — **vendored verbatim** at `src/trust_layer/` because that repo is currently private and a forge-address dependency would break `make install` for anyone cloning this submission (judges included). Both are Apache 2.0, same author. Follow-up: de-vendor once upstream is public — tracked in `ROADMAP.md` and `src/trust_layer/VENDORED.md`.
+The field-extraction design and the noise heuristic come from the author's sibling [`pdf-extract`](https://github.com/Willpower-hadisfar/pdf-extract) project (its pdfplumber engine was later swapped for PyMuPDF on the maintainer's cantonal-PDF benchmark — see ADR-002); confidence scoring delegates to the real [`trust-layer`](https://github.com/Willpower-hadisfar/trust-layer) package — **vendored verbatim** at `src/trust_layer/` because that repo is currently private and a forge-address dependency would break `make install` for anyone cloning this submission (judges included). Both are Apache 2.0, same author. Follow-up: de-vendor once upstream is public — tracked in `ROADMAP.md` and `src/trust_layer/VENDORED.md`.
 
 ## Naming note
 

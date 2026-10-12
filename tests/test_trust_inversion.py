@@ -7,7 +7,7 @@ proves:
 
   1. the PROPERTY: a deliberately noisier document scores LOWER confidence
      than a clean one, through the full real path (generated PDF bytes ->
-     pdfplumber extraction -> trust_layer scorer -> TrustContract); and
+     PyMuPDF extraction -> trust_layer scorer -> TrustContract); and
   2. the HONEST CAVEAT: the property is registration-dependent — with the
      same scorer and the SAME metrics but an uninverted noise dimension,
      the ordering flips. The code under test (trust_layer) applies whatever

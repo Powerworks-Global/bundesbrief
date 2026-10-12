@@ -1,13 +1,16 @@
 """
-Extraction: real PDF field extraction via pdfplumber, plus the text-level
+Extraction: real PDF field extraction via PyMuPDF, plus the text-level
 field matcher the PDF path reuses.
 
 Historically this module was an MVP stub that operated only on
 already-extracted text (deliberately deferring real PDF parsing — see
-ADR-001's scope note, superseded by ADR-002). It now carries the real
-mechanism imported from the `pdf-extract` project: `extract_pdf()` reads
-raw PDF bytes through pdfplumber and matches the same Swiss parliamentary
-field patterns against the actual PDF text layer.
+ADR-001's scope note, superseded by ADR-002). It now carries real PDF
+extraction: `extract_pdf()` reads raw PDF bytes through PyMuPDF and matches
+the same Swiss parliamentary field patterns against the actual PDF text
+layer. The engine is PyMuPDF, chosen over pdfplumber on the maintainer's
+cantonal-PDF benchmark (~47x faster per page, zero crashes vs two) and
+reproduced on 18 fresh Canton of Zurich documents fetched live via
+api.openparldata.ch — see ADR-002 for the measurement.
 
 It is *not* an OCR engine: a PDF with no text layer (a raw scan) yields
 empty text and therefore no fields — genuine scans would need
@@ -27,7 +30,7 @@ import re
 from dataclasses import dataclass
 from typing import List, Optional
 
-import pdfplumber
+import pymupdf
 
 from bundesbrief.models import ParliamentaryAffair
 from bundesbrief.noise import NoiseScore, noise_score
@@ -71,9 +74,9 @@ def extract_pages(pdf_path: str) -> List[str]:
     list index + 1 equals the 1-based page number.
     """
     pages: List[str] = []
-    with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
-            pages.append(page.extract_text() or "")
+    with pymupdf.open(pdf_path) as doc:
+        for page in doc:
+            pages.append(page.get_text("text") or "")
     return pages
 
 
@@ -113,12 +116,12 @@ def extract(raw_text: str, source_url: str = "") -> ExtractionResult:
 
 
 def extract_pdf(pdf_path: str, source_url: str = "") -> ExtractionResult:
-    """Extract fields from raw PDF bytes via pdfplumber.
+    """Extract fields from raw PDF bytes via PyMuPDF.
 
     A parser failure (malformed PDF, encrypted file, truncated stream,
     unreadable page) is caught and recorded in ``ExtractionResult.error``
     with a worst-case noise reading and no affair — callers get a uniform
-    "recorded outcome" shape and never see pdfplumber/pdfminer exceptions.
+    "recorded outcome" shape and never see PyMuPDF exceptions.
     """
     try:
         pages = extract_pages(pdf_path)
