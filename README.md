@@ -10,7 +10,7 @@ Named for the 1291 Bundesbrief — the Federal Charter, the actual founding writ
 
 ```bash
 make install
-make test   # 15 unit tests, run against sample messy data
+make test   # 21 unit tests, run against sample messy data
 make run    # starts the API on http://127.0.0.1:8000 — see /docs for Swagger UI
 ```
 
@@ -20,6 +20,21 @@ curl http://127.0.0.1:8000/affairs            # every sample affair + its trust 
 curl http://127.0.0.1:8000/affairs/GR-2026-0412  # full trust contract for one
 curl http://127.0.0.1:8000/ledger/verify       # proves the justification ledger is untampered
 ```
+
+## MCP server
+
+The same pipeline is also exposed as an [MCP](https://modelcontextprotocol.io) server, so an
+agent can pull a Trust Contract before deciding whether to act on a record, not just a human
+hitting `/docs`.
+
+```bash
+make mcp    # runs the server over stdio — add it to an MCP client instead of running directly
+```
+
+Tools: `list_affairs`, `get_affair(affair_id)`, `verify_ledger`. Point an MCP client at
+`python -m bundesbrief` — see [`config/claude_desktop_config.json.example`](config/claude_desktop_config.json.example)
+and [`config/vscode_mcp_config.json.example`](config/vscode_mcp_config.json.example) for ready-made
+client configs (copy, drop the `.example` suffix, fill in the path).
 
 ## What the three sample documents demonstrate
 
@@ -46,6 +61,7 @@ raw text ──▶ extraction.py ──▶ ExtractionResult (fields found, noise
                                         │
                                         ▼
                                    api.py ──▶ FastAPI, OpenAPI docs at /docs
+                                   mcp_server.py ──▶ MCP tools over stdio (same contracts, agent-facing)
 ```
 
 Each module is independently testable and doesn't know about the others' internals — see [`docs/adrs/ADR-001`](docs/adrs/ADR-001%20%E2%80%94%20Trust%20Contract%20as%20a%20Decoupled%20Layer%20over%20Extraction.md) for why extraction and trust-scoring are deliberately decoupled.
