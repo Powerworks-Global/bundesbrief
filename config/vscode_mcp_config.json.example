@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "bundesbrief": {
+      "command": "python",
+      "args": ["-m", "bundesbrief"],
+      "transport": "stdio"
+    }
+  }
+}

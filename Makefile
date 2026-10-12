@@ -1,4 +1,4 @@
-.PHONY: install test run
+.PHONY: install test run mcp
 
 install:
 	pip install -e . -r requirements.txt
@@ -8,3 +8,6 @@ test:
 
 run:
 	uvicorn bundesbrief.api:app --reload --app-dir src
+
+mcp:
+	python -m bundesbrief
