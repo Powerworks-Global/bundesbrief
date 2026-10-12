@@ -8,11 +8,12 @@ Time-ordered, Now/Next/Later — not a backlog. "Now" is this MVP, built to demo
 - Hash-chained, append-only justification ledger with a `/ledger/verify` endpoint proving tamper-evidence.
 - Three sample documents demonstrating all three outcomes on the same pipeline.
 - FastAPI surface with free OpenAPI docs at `/docs`.
-- 15 unit tests (unittest, no pytest dependency — matches Rütli's convention).
+- 39 unit tests (unittest, no pytest dependency — matches Rütli's convention), including real generated PDFs (reportlab) for the extraction path.
 
 ## Next (if this gets real traction post-challenge)
 
-- **Real PDF parsing.** Swap the plain-text extraction stub for pdfplumber/PyMuPDF against actual cantonal parliament PDFs. This is the single biggest gap between "architecture demo" and "actually solves openparla's brief."
+- ~~**Real PDF parsing.**~~ **Closed 2026-10-12:** real field extraction from PDF bytes via `pdfplumber` (`extract_pdf`/`process_pdf`), with the named-sub-score noise heuristic and malformed-document containment. See [ADR-002](docs/adrs/ADR-002%20%E2%80%94%20Real%20PDF%20Extraction%20and%20a%20Vendored%20trust-layer%20Dependency.md). Still open underneath it: **raw scans need real OCR** (`pytesseract`/`pdf2image`) — text-layer PDFs only for now.
+- **De-vendor `trust_layer`.** Replace the verbatim vendored copy at `src/trust_layer/` with a version-pinned public dependency once the upstream repo is public or on PyPI (currently private — a forge-address dependency would break `make install` for judges/strangers; see `src/trust_layer/VENDORED.md`). Same follow-up applies to `bundesbrief.ledger` → `trust_layer.ledger`: only viable as a forward-compatible format migration, never a silent re-hash of existing chains.
 - **Calibrate the confidence weights against a labeled dataset.** The current `0.5/0.3/0.2` split is a reasonable starting point, not a tuned model — needs real extraction outcomes (correct vs. incorrect) to validate against.
 - **Cross-reference signal.** Add a telemetry field scoring agreement between the extracted text and the raw source page image (e.g. a second-pass OCR confidence, or a vision-model cross-check) — the strongest signal this MVP doesn't yet have.
 - **Per-source reliability history.** Track extraction success rate per canton/source over time and feed it back into the telemetry vector, the same way Rütli tracks policy-decision history — not built here, would need the ledger to accumulate real volume first.

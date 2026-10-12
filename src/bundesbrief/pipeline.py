@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
-from bundesbrief.extraction import extract
+from bundesbrief.extraction import extract, extract_pdf
 from bundesbrief.ledger import Ledger
 from bundesbrief.models import TrustContract
 from bundesbrief.trust import build_trust_contract
@@ -16,6 +16,24 @@ def process_document(raw_text: str, source_url: str, document_date: date, ledger
     that's a Halt-before-scoring case, not a low-confidence one."""
     result = extract(raw_text, source_url=source_url)
     if result.affair is None:
+        return None
+
+    age_days = (date.today() - document_date).days
+    contract = build_trust_contract(result.affair, result, source_age_days=float(age_days))
+    ledger.append(contract)
+    return contract
+
+
+def process_pdf(pdf_path: str, document_date: date, ledger: Ledger, source_url: str = "") -> TrustContract | None:
+    """Real-PDF entrypoint: raw PDF bytes -> extraction -> TrustContract.
+
+    A malformed/unreadable PDF is a recorded outcome, never an exception:
+    `extract_pdf` contains parser failures in `ExtractionResult.error` (and
+    logs the reason), and this function then returns `None` — a
+    halt-before-scoring case, like an extraction that finds no affair at all.
+    """
+    result = extract_pdf(pdf_path, source_url=source_url)
+    if result.error is not None or result.affair is None:
         return None
 
     age_days = (date.today() - document_date).days
