@@ -2,14 +2,27 @@
 The actual Truth Layer: turns an ExtractionResult's telemetry into a single
 confidence score, then wraps it in a TrustContract the API layer can act on.
 
-Scoring is a weighted blend of three independent signals rather than one
-pass/fail check — see docs/adrs/ADR-001 for why each signal is scored
-separately instead of a single "did extraction succeed" boolean.
+Scoring itself is *not* reimplemented here any more — it delegates to the
+real `trust_layer` package (vendored under `src/trust_layer/`, see
+`src/trust_layer/VENDORED.md`) via its `ConfidenceScorer` and `Dimension`
+abstraction. This module keeps only the domain adaptation: mapping the
+parliamentary telemetry vector onto trust_layer's raw metrics.
+
+THE NOISE INVERSION — do not "simplify" this away:
+trust_layer's default normaliser treats a *higher* raw metric as *better*.
+A raw noise score is the opposite (higher = noisier = worse), so the noise
+dimension is registered with `normalise=lambda raw: 1.0 - raw`. Without
+that inversion a noisier document would wrongly score as MORE confident.
+`tests/test_trust_inversion.py` proves the property end to end on real
+generated PDFs and shows the contrast if the dimension were registered
+uninverted. See docs/adrs/ADR-002.
 """
 
 from __future__ import annotations
 
 import uuid
+
+from trust_layer import ConfidenceScorer, Dimension
 
 from bundesbrief.extraction import ExtractionResult
 from bundesbrief.models import (
@@ -25,6 +38,22 @@ from bundesbrief.models import (
 _SCHEMA_COMPLETENESS_WEIGHT = 0.5
 _NOISE_PENALTY_WEIGHT = 0.3
 _FRESHNESS_WEIGHT = 0.2
+
+
+def _scorer() -> ConfidenceScorer:
+    return ConfidenceScorer(
+        {
+            "completeness": Dimension("completeness", _SCHEMA_COMPLETENESS_WEIGHT),
+            # Inverted: a *lower* raw noise score must mean a *higher*
+            # confidence contribution. trust_layer's default normaliser
+            # clamps the raw value (higher = better), which would score a
+            # noisy document as MORE confident. Flipping it here is the fix.
+            "noise": Dimension("noise", _NOISE_PENALTY_WEIGHT, normalise=lambda raw: 1.0 - raw),
+            "freshness": Dimension("freshness", _FRESHNESS_WEIGHT),
+        }
+    )
+
+_SCORER = _scorer()
 
 
 def schema_completeness(telemetry: TrustTelemetryVector) -> float:
@@ -47,12 +76,21 @@ def freshness_score(telemetry: TrustTelemetryVector) -> float:
 
 
 def compute_confidence(telemetry: TrustTelemetryVector) -> float:
-    score = (
-        _SCHEMA_COMPLETENESS_WEIGHT * schema_completeness(telemetry)
-        + _NOISE_PENALTY_WEIGHT * noise_score(telemetry)
-        + _FRESHNESS_WEIGHT * freshness_score(telemetry)
+    """Blend the three domain signals through trust_layer's real scorer.
+
+    Raw metrics handed to the scorer: completeness and freshness are already
+    "higher = better"; raw noise is inverted by the dimension's normaliser
+    (module docstring) inside trust_layer's scoring step.
+    """
+    scorer = _SCORER
+    confidence = scorer.score(
+        {
+            "completeness": schema_completeness(telemetry),
+            "noise": telemetry.ocr_noise_ratio,
+            "freshness": freshness_score(telemetry),
+        }
     )
-    return round(min(max(score, 0.0), 1.0), 4)
+    return round(confidence.score, 4)
 
 
 def build_trust_contract(

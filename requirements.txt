@@ -2,3 +2,5 @@ fastapi>=0.115
 uvicorn[standard]>=0.30
 pydantic>=2.8
 mcp>=1.0.0,<2
+pymupdf>=1.24
+reportlab>=4.0  # test-only: generates real PDFs for the extraction tests
