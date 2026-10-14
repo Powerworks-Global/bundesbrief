@@ -56,7 +56,9 @@ class ExtractionResult:
 
     ``error`` is set (and ``affair`` is ``None``) when the document could not
     be parsed at all: a recorded failure, not an exception. ``noise`` carries
-    the named sub-scores behind ``ocr_noise_ratio``.
+    the named sub-scores behind ``ocr_noise_ratio``. ``source_text`` keeps
+    the raw extracted text so the Apertus cross-check can judge the fields
+    against the same text they were extracted from.
     """
 
     affair: ParliamentaryAffair | None
@@ -65,6 +67,7 @@ class ExtractionResult:
     ocr_noise_ratio: float
     noise: NoiseScore | None = None
     error: str | None = None
+    source_text: str = ""
 
 
 def extract_pages(pdf_path: str) -> List[str]:
@@ -112,6 +115,7 @@ def extract(raw_text: str, source_url: str = "") -> ExtractionResult:
         fields_expected=len(EXPECTED_FIELDS),
         ocr_noise_ratio=round(noise.score, 4),
         noise=noise,
+        source_text=raw_text,
     )
 
 
@@ -134,5 +138,6 @@ def extract_pdf(pdf_path: str, source_url: str = "") -> ExtractionResult:
             fields_expected=len(EXPECTED_FIELDS),
             ocr_noise_ratio=1.0,
             error=message,
+            source_text="",
         )
     return extract("\n".join(pages), source_url=source_url or f"file://{pdf_path}")

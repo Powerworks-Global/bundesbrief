@@ -8,8 +8,9 @@ from __future__ import annotations
 import hashlib
 from datetime import datetime, timezone
 from enum import Enum
+from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_serializer
 
 
 class AgentExecutionMode(str, Enum):
@@ -32,7 +33,26 @@ class ParliamentaryAffair(BaseModel):
 
 
 class TrustTelemetryVector(BaseModel):
-    """Contextual health signals accompanying an extraction, not the extraction itself."""
+    """Contextual health signals accompanying an extraction, not the extraction itself.
+
+    THE APERTUS FIELDS — read before touching the three ``apertus_*`` fields:
+
+    * ``apertus_agreement_score`` defaults to a NEUTRAL 1.0: a code path that
+      never ran the cross-check must behave exactly as it did before the
+      dimension existed ("not penalised"), and the deterministic scoring path
+      indeed ignores the value unless the cross-check actually ran. The
+      default NEVER means "verified as fully agreeing".
+    * What makes "measured" identifiable is ``apertus_backend``: it is
+      ``None`` when nobody ever measured agreement, the model tag when an
+      Apertus run produced the score, a ``stub:`` label when the offline
+      stub produced it, and a ``not-run:`` marker (with the reason) when an
+      attempted cross-check failed. See docs/adrs/ADR-003.
+    * Ledger wire format: when ``apertus_backend`` is ``None`` all three
+      ``apertus_*`` keys are OMITTED from serialization (see the model
+      serializer below), so records that never had the dimension hash and
+      verify byte-for-byte as before — the hash chain over pre-existing
+      ledgers stays intact (the landmine recorded in ADR-002).
+    """
 
     fields_expected: int = Field(..., description="How many fields the schema requires")
     fields_found: int = Field(..., description="How many fields the extractor actually populated")
@@ -43,6 +63,38 @@ class TrustTelemetryVector(BaseModel):
     max_acceptable_age_days: float = Field(
         default=3650.0, description="Beyond this, staleness alone should degrade confidence"
     )
+    apertus_agreement_score: float = Field(
+        default=1.0,
+        ge=0.0,
+        le=1.0,
+        description="Fourth-dimension signal: fraction of extracted field values the "
+        "cross-check backend found corroborated by the source text. Default 1.0 is "
+        "NEUTRAL (cross-check not run -> no penalty), not a claim of verified agreement.",
+    )
+    apertus_backend: Optional[str] = Field(
+        default=None,
+        description="What produced apertus_agreement_score: a model tag, a 'stub:' label, "
+        "or a 'not-run:' marker with the failure reason. None = never measured.",
+    )
+    apertus_discrepancies: Optional[list[str]] = Field(
+        default=None, description="Field-level disagreements reported by the cross-check backend."
+    )
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler):
+        """Omit the apertus_* keys entirely for records that were never measured.
+
+        This is what lets a new optional dimension join a hash-chained ledger
+        without retroactively invalidating a single existing entry: an
+        unmeasured telemetry vector serializes byte-for-byte as it did before
+        the dimension existed, so every historical entry re-hashes to the
+        value it was appended with. Pinned by tests/test_ledger_legacy_chain.py.
+        """
+        data = handler(self)
+        if self.apertus_backend is None:
+            for key in ("apertus_agreement_score", "apertus_backend", "apertus_discrepancies"):
+                data.pop(key, None)
+        return data
 
 
 class TrustExecutionPolicy(BaseModel):

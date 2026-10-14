@@ -12,22 +12,27 @@ from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
+from bundesbrief.apertus_crosscheck import get_crosscheck_backend, log_backend
 from bundesbrief.ledger import Ledger
 from bundesbrief.models import TrustContract
-from bundesbrief.pipeline import process_sample_data
+from bundesbrief.pipeline import SampleOutcome, process_sample_data_outcomes
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "sample_affairs"
 LEDGER_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "mcp_ledger.jsonl"
 
 SYSTEM_PROMPT = (
     "Bundesbrief wraps extracted Swiss parliamentary affairs in a Trust Contract: a "
-    "confidence score (schema completeness, OCR noise, source staleness) gating whether "
-    "a record is safe to Act on, needs human Suggest-review, or must Halt. Always check "
-    "is_publication_permitted before treating a record as ground truth, and use "
-    "verify_ledger to confirm the underlying decision log hasn't been tampered with."
+    "confidence score (schema completeness, OCR noise, source staleness, plus an "
+    "optional Apertus cross-check agreement dimension) gating whether a record is "
+    "safe to Act on, needs human Suggest-review, or must Halt. Always check "
+    "is_publication_permitted before treating a record as ground truth, read the "
+    "cross_check block's backend label to tell a measured model agreement from a "
+    "stub harness figure, and use verify_ledger to confirm the underlying decision "
+    "log hasn't been tampered with."
 )
 
 _contracts: dict[str, TrustContract] = {}
+_outcomes: dict[str, SampleOutcome] = {}
 
 
 def _ensure_seeded() -> None:
@@ -36,8 +41,34 @@ def _ensure_seeded() -> None:
         return
     if LEDGER_PATH.exists():
         LEDGER_PATH.unlink()
-    for contract in process_sample_data(DATA_DIR, LEDGER_PATH):
-        _contracts[contract.affair_id] = contract
+    backend = get_crosscheck_backend()
+    log_backend(backend)  # names the backend behind every cross_check number below
+    for outcome in process_sample_data_outcomes(DATA_DIR, LEDGER_PATH):
+        _contracts[outcome.contract.affair_id] = outcome.contract
+        _outcomes[outcome.contract.affair_id] = outcome
+
+
+def _cross_check_block(contract: TrustContract) -> dict:
+    """The cross_check view of a contract's telemetry, backend label included.
+
+    Reads what the ledger recorded (no silent re-measurement), and states
+    plainly when no cross-check ran — an agent client can always tell a
+    measured Apertus agreement from a stub figure from this block alone.
+    """
+    telemetry = contract.telemetry
+    if telemetry.apertus_backend is None:
+        return {"ran": False, "reason": "no cross-check was performed for this record"}
+    ran = not telemetry.apertus_backend.startswith("not-run:")
+    block = {
+        "ran": ran,
+        "agreement_score": telemetry.apertus_agreement_score,
+        "discrepancies": telemetry.apertus_discrepancies or [],
+        "backend": telemetry.apertus_backend,
+    }
+    if not ran:
+        block.pop("agreement_score")
+        block["reason"] = telemetry.apertus_backend
+    return block
 
 
 def register_tools(mcp: FastMCP) -> None:
@@ -59,7 +90,7 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool()
     async def get_affair(affair_id: str) -> dict:
-        """Get the full Trust Contract for one parliamentary affair by ID | trust contract, confidence score, telemetry, affair detail | Use when you have an affair_id from list_affairs and need the full confidence breakdown before deciding whether to act on it | Returns the complete TrustContract: confidence score, telemetry vector, policy thresholds, and payload hash. See also: list_affairs.
+        """Get the full Trust Contract for one parliamentary affair by ID, including its Apertus cross-check signal | trust contract, confidence score, telemetry, cross-check agreement, affair detail | Use when you have an affair_id from list_affairs and need the full confidence breakdown before deciding whether to act on it | Returns the complete TrustContract: confidence score, telemetry vector, policy thresholds, payload hash, plus a cross_check block (agreement_score, discrepancies, backend label) — the backend label distinguishes a measured model agreement ('ollama:...' / a model tag) from a stub harness figure ('stub:...') or a not-run marker. See also: list_affairs.
 
         Args:
             affair_id: The affair identifier, e.g. 'GR-2026-0412'. Get this from list_affairs first.
@@ -68,7 +99,9 @@ def register_tools(mcp: FastMCP) -> None:
         contract = _contracts.get(affair_id)
         if contract is None:
             return {"error": f"Unknown affair_id '{affair_id}', or it was Halted before a contract existed"}
-        return contract.model_dump(mode="json")
+        payload = contract.model_dump(mode="json")
+        payload["cross_check"] = _cross_check_block(contract)
+        return payload
 
     @mcp.tool()
     async def verify_ledger() -> dict:
