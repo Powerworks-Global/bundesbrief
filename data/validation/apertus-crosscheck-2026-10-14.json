@@ -5,6 +5,7 @@
   "backend_label": "ollama:hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M",
   "model_note": "Upstream model: swiss-ai/Apertus-v1.5-8B. Weights actually run: community Q4_K_M GGUF quantisation served locally via Ollama (hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M). Numbers are from the quantised local weights, not the full upstream weights.",
   "hardware_note": "2 CPU cores, ~6.8 GB free memory, no accelerator; run sized to 3 samples + a few real Zurich documents",
+  "run_provenance": "EXECUTION LOCATION: this run was executed locally on the project workstation (2 CPU cores, no accelerator, quantised weights served by a local Ollama daemon, model dir under /tmp). NO cloud virtual machine was created for it, and none was touched during setup — which is why there is no instance identity or deletion evidence to show; the machine this artifact describes is the machine it ran on.",
   "documents": [
     {
       "kind": "sample",

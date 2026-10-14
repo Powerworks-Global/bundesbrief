@@ -197,6 +197,13 @@ def main() -> int:
         if real_backends_enabled()
         else "STUB RUN - harness validation figures only, no model involved.",
         "hardware_note": "2 CPU cores, ~6.8 GB free memory, no accelerator; run sized to 3 samples + a few real Zurich documents",
+        "run_provenance": (
+            "EXECUTION LOCATION: this run was executed locally on the project workstation "
+            "(2 CPU cores, no accelerator, quantised weights served by a local Ollama daemon, "
+            "model dir under /tmp). NO cloud virtual machine was created for it, and none was "
+            "touched during setup — which is why there is no instance identity or deletion "
+            "evidence to show; the machine this artifact describes is the machine it ran on."
+        ),
         "documents": [],
     }
 

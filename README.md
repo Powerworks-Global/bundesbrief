@@ -66,8 +66,11 @@ seconds-to-minutes per document) are in the `apertus_crosscheck` module docstrin
 **Recorded real run** (2026-10-14, `data/validation/apertus-crosscheck-2026-10-14.json`): 3 sample
 documents + 4 real Canton of Zurich PDFs — deliberately small, because measured per-document cost
 on this box ran 4.5 s–85 s (a Q4_K_M 8B on 2 CPU cores, no accelerator; token spend per call is
-recorded in the artifact). Result: agreement 1.0 on all three samples; 2 of 4 Zurich documents
-yielded no affair for deterministic extraction at all (recorded, not cross-checked); and on both
+recorded in the artifact). Execution location: **locally on the project workstation** — no cloud
+virtual machine was created for the run (nor touched during setup), so there is no instance
+identity or deletion evidence; the machine the artifact describes is the machine it ran on.
+Result: agreement 1.0 on all three samples; 2 of 4 Zurich documents yielded no affair for
+deterministic extraction at all (recorded, not cross-checked); and on both
 Zurich documents that did yield fields, Apertus flatly rejected the regex-extracted `affair_id` as
 unsupported by the source text (agreement 0.0) — the cross-check earning its keep on real data.
 
