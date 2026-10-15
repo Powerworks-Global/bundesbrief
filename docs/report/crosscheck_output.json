@@ -1,0 +1,8 @@
+{
+    "affair_id": "GR-2026-0412",
+    "ran": true,
+    "agreement_score": 1.0,
+    "backend": "stub:substring-presence (NOT the Apertus model; harness validation only \u2014 set BUNDESBRIEF_REAL_BACKENDS=1 for a real run)",
+    "discrepancies": [],
+    "note": "stub harness-validation figure, NOT a model measurement"
+}

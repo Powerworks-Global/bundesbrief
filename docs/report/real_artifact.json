@@ -1,0 +1,137 @@
+{
+    "kind": "bundesbrief-apertus-crosscheck-run",
+    "run_at_utc": "2026-10-14T16:56:11.401994+00:00",
+    "backend_kind": "real-model",
+    "backend_label": "ollama:hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M",
+    "model_note": "Upstream model: swiss-ai/Apertus-v1.5-8B. Weights actually run: community Q4_K_M GGUF quantisation served locally via Ollama (hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M). Numbers are from the quantised local weights, not the full upstream weights.",
+    "hardware_note": "2 CPU cores, ~6.8 GB free memory, no accelerator; run sized to 3 samples + a few real Zurich documents",
+    "run_provenance": "EXECUTION LOCATION: this run was executed locally on the project workstation (2 CPU cores, no accelerator, quantised weights served by a local Ollama daemon, model dir under /tmp). NO cloud virtual machine was created for it, and none was touched during setup \u2014 which is why there is no instance identity or deletion evidence to show; the machine this artifact describes is the machine it ran on.",
+    "documents": [
+        {
+            "kind": "sample",
+            "affair_id": "GR-2026-0412",
+            "deterministic_confidence": 0.9905,
+            "deterministic_mode": "ACT",
+            "cross_check": {
+                "agreement_score": 1.0,
+                "discrepancies": [],
+                "backend": "ollama:hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M",
+                "provenance": {
+                    "model": "hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M",
+                    "host": "http://127.0.0.1:11434",
+                    "prompt_tokens": 348,
+                    "generated_tokens": 17
+                },
+                "elapsed_ms": 4636.4
+            }
+        },
+        {
+            "kind": "sample",
+            "affair_id": "GR-2026-0413",
+            "deterministic_confidence": 0.7775,
+            "deterministic_mode": "SUGGEST",
+            "cross_check": {
+                "agreement_score": 1.0,
+                "discrepancies": [],
+                "backend": "ollama:hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M",
+                "provenance": {
+                    "model": "hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M",
+                    "host": "http://127.0.0.1:11434",
+                    "prompt_tokens": 351,
+                    "generated_tokens": 17
+                },
+                "elapsed_ms": 5822.0
+            }
+        },
+        {
+            "kind": "sample",
+            "affair_id": "GR-1998-0071",
+            "deterministic_confidence": 0.485,
+            "deterministic_mode": "HALT",
+            "cross_check": {
+                "agreement_score": 1.0,
+                "discrepancies": [],
+                "backend": "ollama:hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M",
+                "provenance": {
+                    "model": "hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M",
+                    "host": "http://127.0.0.1:11434",
+                    "prompt_tokens": 288,
+                    "generated_tokens": 17
+                },
+                "elapsed_ms": 4454.2
+            }
+        },
+        {
+            "kind": "zurich",
+            "affair_number": "VNL1002006",
+            "title": "\u00c4nderung der Kantonalen Opferhilfeverordnung (KOHV)",
+            "doc_url": "https://www.notes.zh.ch/sk/VNL/vnl.nsf/vw-alldocuments/E3B2D8E5F71D361BC1258E8800251AD1/$File/JI%20-%20Brief%20RRin%20Fehr%20\u00c4nderung%20der%20Kantonalen%20Opferhilfeveror.pdf",
+            "extract_ms": 7.8,
+            "note": "no affair_id found by deterministic extraction - nothing to cross-check",
+            "fields_found": 0
+        },
+        {
+            "kind": "zurich",
+            "affair_number": "VNL1002005",
+            "title": "Gesetz \u00fcber egovpartner",
+            "doc_url": "https://www.notes.zh.ch/sk/VNL/vnl.nsf/vw-alldocuments/06AF7F46E99D8AC4C1258E7D004BF064/$File/Vernehmlassungsvorlage.pdf",
+            "extract_ms": 8.8,
+            "fields_found": 1,
+            "fields_expected": 5,
+            "ocr_noise_ratio": 0.0341,
+            "cross_check": {
+                "agreement_score": 0.0,
+                "discrepancies": [
+                    "sstelle."
+                ],
+                "backend": "ollama:hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M",
+                "provenance": {
+                    "model": "hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M",
+                    "host": "http://127.0.0.1:11434",
+                    "prompt_tokens": 1068,
+                    "generated_tokens": 20
+                },
+                "elapsed_ms": 5523.2
+            },
+            "confidence_3dim_deterministic_only": 0.5898,
+            "confidence_with_cross_check": 0.4718,
+            "mode": "HALT"
+        },
+        {
+            "kind": "zurich",
+            "affair_number": "VNL1001999",
+            "title": "PBG-Revision \"Anhebung der Grenze Hochhaus\"",
+            "doc_url": "https://www.notes.zh.ch/sk/VNL/vnl.nsf/vw-alldocuments/3AF2794367D90B14C1258E74006B910A/$File/Begleitschreiben.pdf",
+            "extract_ms": 13.1,
+            "note": "no affair_id found by deterministic extraction - nothing to cross-check",
+            "fields_found": 0
+        },
+        {
+            "kind": "zurich",
+            "affair_number": "VNL1002000",
+            "title": "Vernehmlassung zur Teilrevision des Pflegegesetzes (Arbeitsbedingungen in der Pflege) \u2013 Umsetzung der Motion KR-Nr. 78/2022 betr. \u00abStopp Pflexit. Hopp Kanton Z\u00fcrich\u00bb",
+            "doc_url": "https://www.notes.zh.ch/sk/VNL/vnl.nsf/vw-alldocuments/A39CD4B72F743E14C1258E7600319AA5/$File/Vorentwurf%20und%20Erl\u00e4uterungen.pdf",
+            "extract_ms": 17.5,
+            "fields_found": 1,
+            "fields_expected": 5,
+            "ocr_noise_ratio": 0.0281,
+            "cross_check": {
+                "agreement_score": 0.0,
+                "discrepancies": [
+                    "affair_id"
+                ],
+                "backend": "ollama:hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M",
+                "provenance": {
+                    "model": "hf.co/Colby/apertus-v1.5-8b-text-Q4_K_M-GGUF:Q4_K_M",
+                    "host": "http://127.0.0.1:11434",
+                    "prompt_tokens": 1123,
+                    "generated_tokens": 21
+                },
+                "elapsed_ms": 85132.7
+            },
+            "confidence_3dim_deterministic_only": 0.5916,
+            "confidence_with_cross_check": 0.4733,
+            "mode": "HALT"
+        }
+    ]
+}

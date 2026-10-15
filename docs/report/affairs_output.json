@@ -1,0 +1,20 @@
+[
+    {
+        "affair_id": "GR-2026-0412",
+        "confidence_score": 0.9905,
+        "mode": "ACT",
+        "is_publication_permitted": true
+    },
+    {
+        "affair_id": "GR-2026-0413",
+        "confidence_score": 0.7775,
+        "mode": "SUGGEST",
+        "is_publication_permitted": true
+    },
+    {
+        "affair_id": "GR-1998-0071",
+        "confidence_score": 0.485,
+        "mode": "HALT",
+        "is_publication_permitted": false
+    }
+]

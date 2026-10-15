@@ -1,0 +1,15 @@
+test_staleness_degrades_score_independent_of_extraction_quality (test_trust.TestConfidenceScoring.test_staleness_degrades_score_independent_of_extraction_quality) ... ok
+test_subscores_individually (test_trust.TestConfidenceScoring.test_subscores_individually) ... ok
+test_act_boundary (test_trust.TestThresholdEvaluation.test_act_boundary) ... ok
+test_halt_below_floor (test_trust.TestThresholdEvaluation.test_halt_below_floor) ... ok
+test_suggest_band (test_trust.TestThresholdEvaluation.test_suggest_band) ... ok
+test_registered_inverted_dimension_flips_it (test_trust_inversion.TestInversionIsRegistrationDependent.test_registered_inverted_dimension_flips_it) ... ok
+test_uninverted_noise_dimension_would_score_noisier_higher (test_trust_inversion.TestInversionIsRegistrationDependent.test_uninverted_noise_dimension_would_score_noisier_higher) ... ok
+test_noisier_pdf_contract_scores_lower_confidence (test_trust_inversion.TestNoisierScoresLowerEndToEnd.test_noisier_pdf_contract_scores_lower_confidence) ... ok
+test_noisier_raw_noise_alone_lowers_confidence (test_trust_inversion.TestNoisierScoresLowerEndToEnd.test_noisier_raw_noise_alone_lowers_confidence)
+Same property at the scorer boundary, no PDFs involved. ... ok
+
+----------------------------------------------------------------------
+Ran 100 tests in 0.393s
+
+OK
